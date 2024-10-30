@@ -1,8 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from .validators import username_validator
-
 
 class User(AbstractUser):
     USER = 'user'
@@ -15,17 +13,9 @@ class User(AbstractUser):
         (ADMIN, 'Администратор'),
     ]
 
-    username = models.CharField(
-        max_length=150,
-        unique=True,
-        validators=(username_validator,),
-        error_messages={
-            'unique': 'Пользователь с таким именем уже существует.',
-        },
-    )
     email = models.EmailField(unique=True)
-    role = models.CharField(choices=ROLE_CHOICES, default=USER)
     bio = models.TextField(blank=True)
+    role = models.CharField(choices=ROLE_CHOICES, default=USER)
 
     class Meta:
         verbose_name = 'Пользователь'
