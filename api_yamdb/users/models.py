@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -13,7 +14,7 @@ class User(AbstractUser):
         (ADMIN, 'Администратор'),
     ]
 
-    email = models.EmailField(unique=True)
+    email = models.EmailField(unique=True, blank=False, null=False)
     bio = models.TextField(blank=True)
     role = models.CharField(choices=ROLE_CHOICES, default=USER)
 
@@ -37,3 +38,11 @@ class User(AbstractUser):
     @property
     def is_admin(self):
         return self.role == self.ADMIN or self.is_superuser
+
+    def clean(self):
+        """Запрещаем использовать 'me' в качестве имени пользователя."""
+        if self.username.lower() == 'me':
+            raise ValidationError(
+                'Использовать "me" в качестве username запрещено.'
+            )
+        super().clean()
