@@ -33,12 +33,6 @@ class User(AbstractUser):
     def is_moderator(self):
         return self.role == self.MODERATOR
 
-    # Проверка, является ли пользователь администратором,
-    # включая суперпользователя.
-    @property
-    def is_admin(self):
-        return self.role == self.ADMIN or self.is_superuser
-
     def clean(self):
         """Запрещаем использовать 'me' в качестве имени пользователя."""
         if self.username.lower() == 'me':
@@ -46,3 +40,8 @@ class User(AbstractUser):
                 'Использовать "me" в качестве username запрещено.'
             )
         super().clean()
+
+    def save(self, *args, **kwargs):
+        # Если роль администратора, устанавливаем is_staff в True.
+        self.is_staff = self.role == self.ADMIN
+        super().save(*args, **kwargs)
