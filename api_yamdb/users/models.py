@@ -17,6 +17,8 @@ class User(AbstractUser):
     email = models.EmailField(unique=True, blank=False, null=False)
     bio = models.TextField(blank=True)
     role = models.CharField(max_length=9, choices=ROLE_CHOICES, default=USER)
+    # Поле для хранения кода подтверждения
+    confirmation_code = models.CharField(max_length=6, blank=True, null=True)
 
     class Meta:
         verbose_name = 'Пользователь'
