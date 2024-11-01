@@ -1,10 +1,12 @@
 from django.db.models import (
     Model, CASCADE,
-    CharField, IntegerField, TextField, SlugField, ManyToManyField, ForeignKey
+    CharField, IntegerField, TextField, SlugField, ManyToManyField,
+    ForeignKey
 )
 
 
 class Genre(Model):
+    """Модель жанра."""
     name = CharField(max_length=256)
     slug = SlugField(max_length=50)
 
@@ -14,6 +16,7 @@ class Genre(Model):
 
 
 class Category(Model):
+    """Модель категории."""
     name = CharField(max_length=256)
     slug = SlugField(max_length=50)
     title = ForeignKey(to='Title', related_name='category', on_delete=CASCADE)
@@ -24,7 +27,14 @@ class Category(Model):
 
 
 class Title(Model):
+    """Модель произведения."""
     name = CharField(max_length=256)
     year = IntegerField()
     description = TextField(null=True)
     genre = ManyToManyField(to=Genre, through='TitleGenre')
+
+
+class TitleGenre(Model):
+    """Модель для связи Title и Genre."""
+    title = ForeignKey(Title, on_delete=CASCADE)
+    genre = ForeignKey(Genre, on_delete=CASCADE)

@@ -6,23 +6,23 @@ class Title(models.Model):
     ...
 
 
-class Category(models.model):
+class Category(models.Model):
     ...
 
 
-class Genre(models.model):
+class Genre(models.Model):
     ...
 
 
 class Review(models.Model):
-    text = models.Text_Field(blank=False)
+    text = models.TextField(blank=False)
     author = models.ForeignKey(User,
                                on_delete=models.CASCADE,
                                related_name='reviews')
     title = models.ForeignKey(Title,
                               on_delete=models.CASCADE,
                               related_name='reviews')
-    score = models.Integer_Field(blank=False)
+    score = models.IntegerField(blank=False)
     pub_date = models.DateTimeField('Дата добавления',
                                     auto_now_add=True,
                                     db_index=True)
@@ -39,7 +39,7 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
-    text = models.Text_Field(blank=False)
+    text = models.TextField(blank=False)
     author = models.ForeignKey(User,
                                on_delete=models.CASCADE,
                                related_name='comments')
