@@ -5,17 +5,17 @@ from users.models import User
 
 
 class UpdateDestroyMixin:
-    """Миксин для функции удаления и изменения отзыва."""
+    """Миксин для функции удаления и изменения комментария."""
 
     def perform_update(self, serializer):
-        """Функция изменяет отзыв ."""
+        """Функция изменяет комментарий."""
         if (serializer.instance.author != self.request.user and
                 self.request.user.role != User.MODERATOR):
             raise PermissionDenied('Изменение чужого контента запрещено!')
         super().perform_update(serializer)
 
     def perform_destroy(self, serializer):
-        """Функция удаляет отзыв."""
+        """Функция удаляет комментарий."""
         if (serializer.author != self.request.user and
                 self.request.user.role != User.MODERATOR):
             raise PermissionDenied('Удаление чужого контента запрещено!')
@@ -23,14 +23,14 @@ class UpdateDestroyMixin:
 
 
 class UpdateDestroyRatingMixin(UpdateDestroyMixin):
-    """Миксин для функции удаления и изменения комментария."""
+    """Миксин для функции удаления и изменения отзыва."""
 
     def perform_update(self, serializer):
-        """Функция изменяет комментарий и обнавляет рейтинг произведения."""
+        """Функция изменяет отзыв и обнавляет рейтинг произведения."""
         super().perform_update(serializer)
         rating(self)
 
     def perform_destroy(self, serializer):
-        """Функция удаляет комментарий и обнавляет рейтинг произведения."""
+        """Функция удаляет отзыв и обнавляет рейтинг произведения."""
         super().perform_destroy(serializer)
         rating(self)
