@@ -1,13 +1,13 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, viewsets
-# from rest_framework.pagination import LimitOffsetPagination
-from api.mixins import UpdateDestroyMixin
+
+from api.mixins import UpdateDestroyMixin, UpdateDestroyRatingMixin
 from api.serializers import CommentSerializer, ReviewSerializer
 from api.utils import rating
 from reviews.models import Review, Title
 
 
-class ReviewViewSet(UpdateDestroyMixin, viewsets.ModelViewSet):
+class ReviewViewSet(UpdateDestroyRatingMixin, viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
