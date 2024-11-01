@@ -1,5 +1,4 @@
-from rest_framework.fields import IntegerField
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, SlugRelatedField
 
 from .models import Genre, Category, Title
 
@@ -20,9 +19,15 @@ class CategorySerializer(ModelSerializer):
 
 class TitleSerializer(ModelSerializer):
     """Сериализатор для модели Title."""
-    genre = GenreSerializer(required=True, many=True)
-    category = CategorySerializer(required=True)
-    rating = IntegerField(blank=True, default=0)
+    genre = SlugRelatedField(
+        queryset=Genre.objects.all(),
+        slug_field='slug',
+        many=True
+    )
+    category = SlugRelatedField(
+        queryset=Category.objects.all(),
+        slug_field='slug'
+    )
 
     class Meta:
         model = Title
@@ -30,7 +35,6 @@ class TitleSerializer(ModelSerializer):
             'id',
             'name',
             'year',
-            'rating',
             'description',
             'genre',
             'category',

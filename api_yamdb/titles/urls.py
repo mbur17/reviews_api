@@ -8,5 +8,8 @@ urlpatterns = [
     path('categories/<slug:category_slug>/', categories),
     path('genres/<slug:genre_slug>/', genres),
     path('titles/<slug:title_slug>/', title),
+
+    path('categories/', categories),
+    path('genres/', genres),
     path('titles/', titles),
 ]

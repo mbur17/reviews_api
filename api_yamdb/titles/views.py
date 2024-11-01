@@ -23,7 +23,7 @@ def categories(request, category_slug=None):
         serializer = CategorySerializer(queryset, many=True)
         return Response(serializer.data, status=HTTPStatus.OK)
     elif method == 'POST':
-        serializer = CategorySerializer(request.data)
+        serializer = CategorySerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=HTTPStatus.CREATED)
@@ -46,7 +46,7 @@ def genres(request, genre_slug=None):
         serializer = GenreSerializer(queryset, many=True)
         return Response(serializer.data, status=HTTPStatus.OK)
     elif method == 'POST':
-        serializer = GenreSerializer(request.data)
+        serializer = GenreSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=HTTPStatus.CREATED)
@@ -56,7 +56,7 @@ def genres(request, genre_slug=None):
     return Response(status=HTTPStatus.NO_CONTENT)
 
 
-@api_view(['GET', 'POST', 'PATCH', 'DELETE'])
+@api_view(['GET', 'PATCH', 'DELETE'])
 def title(request, title_slug=None):
     """
     Функция, обрабатывающая запросы к эндпоинту
@@ -70,7 +70,7 @@ def title(request, title_slug=None):
         return Response(serializer.data, status=HTTPStatus.OK)
     elif method == 'POST' or method == 'PATCH':
         if method == 'POST':
-            serializer = TitleSerializer(request.data)
+            serializer = TitleSerializer(data=request.data)
         else:
             serializer = TitleSerializer(
                 _title, data=request.data, partial=True
@@ -83,12 +83,18 @@ def title(request, title_slug=None):
     return Response(status=HTTPStatus.NO_CONTENT)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def titles(request):
     """
     Функция, обрабатывающая запросы к эндпоинту titles/.
-    Обрабатываемые методы: GET
+    Обрабатываемые методы: GET, POST
     """
+    if request.method == 'POST':
+        serializer = TitleSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=HTTPStatus.OK)
+        return Response(serializer.errors, status=HTTPStatus.BAD_REQUEST)
     queryset = Title.objects.all()
     serializer = TitleSerializer(queryset, many=True)
     return Response(serializer.data)

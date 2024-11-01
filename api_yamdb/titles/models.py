@@ -19,7 +19,6 @@ class Category(Model):
     """Модель категории."""
     name = CharField(max_length=256)
     slug = SlugField(max_length=50)
-    title = ForeignKey(to='Title', related_name='category', on_delete=CASCADE)
 
     class Meta:
         verbose_name = 'категория'
@@ -32,6 +31,7 @@ class Title(Model):
     year = IntegerField()
     description = TextField(null=True)
     genre = ManyToManyField(to=Genre, through='TitleGenre')
+    category = ForeignKey(to=Category, related_name='title', on_delete=CASCADE)
 
 
 class TitleGenre(Model):
