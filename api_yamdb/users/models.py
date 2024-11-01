@@ -44,6 +44,8 @@ class User(AbstractUser):
         super().clean()
 
     def save(self, *args, **kwargs):
-        # Если роль администратора, устанавливаем is_staff в True.
+        # Если суперпользователь, автоматически присваивается роль ADMIN.
+        self.role = self.ADMIN if self.is_superuser else self.role
+        # Для роли ADMIN устанавливаем is_staff в True.
         self.is_staff = self.role == self.ADMIN
         super().save(*args, **kwargs)
