@@ -20,6 +20,14 @@ class SignupSerializer(serializers.Serializer):
         validators=(UniqueValidator(queryset=User.objects.all()),)
     )
 
+    def validate_username(self, value):
+        """Запрещаем использование 'me' в качестве username."""
+        if value.lower() == 'me':
+            raise serializers.ValidationError(
+                'Использовать "me" в качестве username запрещено.'
+            )
+        return value
+
     def create(self, validated_data):
         user, created = User.objects.get_or_create(**validated_data)
         # Генерируем случайный код подтверждения.
