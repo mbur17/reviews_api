@@ -9,13 +9,13 @@ User = get_user_model()
 
 
 class SignupSerializer(serializers.Serializer):
-    email = serializers.EmailField(
-        required=True,
-        validators=(UniqueValidator(queryset=User.objects.all()),)
-    )
     username = serializers.RegexField(
         regex=r'^[\w.@+-]+\Z',
         max_length=150,
+        required=True,
+        validators=(UniqueValidator(queryset=User.objects.all()),)
+    )
+    email = serializers.EmailField(
         required=True,
         validators=(UniqueValidator(queryset=User.objects.all()),)
     )
@@ -62,3 +62,44 @@ class TokenSerializer(serializers.Serializer):
             raise serializers.ValidationError('Неверный код подтверждения.')
         data['user'] = user
         return data
+
+
+class UserSerializer(serializers.ModelSerializer):
+    username = serializers.RegexField(
+        regex=r'^[\w.@+-]+\Z',
+        max_length=150,
+        required=True,
+        validators=(UniqueValidator(queryset=User.objects.all()),)
+    )
+    email = serializers.EmailField(
+        required=True,
+        validators=(UniqueValidator(queryset=User.objects.all()),)
+    )
+    first_name = serializers.CharField(max_length=150)
+    last_name = serializers.CharField(max_length=150)
+
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        )
+
+
+class MeSerializer(serializers.ModelSerializer):
+    username = serializers.RegexField(
+        regex=r'^[\w.@+-]+\Z',
+        max_length=150,
+        validators=(UniqueValidator(queryset=User.objects.all()),)
+    )
+    email = serializers.EmailField(
+        validators=(UniqueValidator(queryset=User.objects.all()),)
+    )
+    first_name = serializers.CharField(max_length=150)
+    last_name = serializers.CharField(max_length=150)
+
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        )
+        read_only_fields = ('role',)
