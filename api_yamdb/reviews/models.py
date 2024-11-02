@@ -6,11 +6,11 @@ class Title(models.Model):
     ...
 
 
-class Category(models.model):
+class Category(models.Model):
     ...
 
 
-class Genre(models.model):
+class Genre(models.Model):
     ...
 
 
