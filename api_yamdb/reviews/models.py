@@ -1,17 +1,52 @@
+from django.contrib.auth import get_user_model
 from django.db import models
-from users.models import User
+from django.db.models import (
+    Model, CASCADE, ManyToManyField, ForeignKey,
+    CharField, SlugField, IntegerField, TextField,
+)
 
 
-class Title(models.Model):
-    ...
+User = get_user_model()
 
 
-class Category(models.Model):
-    ...
+class Genre(Model):
+    """Модель жанра."""
+    name = CharField(max_length=256, verbose_name='Название')
+    slug = SlugField(max_length=50, verbose_name='Слаг')
+
+    class Meta:
+        verbose_name = 'жанр'
+        verbose_name_plural = 'Жанры'
 
 
-class Genre(models.Model):
-    ...
+class Category(Model):
+    """Модель категории."""
+    name = CharField(max_length=256, verbose_name='Название')
+    slug = SlugField(max_length=50, verbose_name='Слаг')
+
+    class Meta:
+        verbose_name = 'категория'
+        verbose_name_plural = 'Категории'
+
+
+class Title(Model):
+    """Модель произведения."""
+    name = CharField(max_length=256, verbose_name='Название')
+    year = IntegerField(verbose_name='Год')
+    description = TextField(null=True, verbose_name='Описание')
+    genre = ManyToManyField(
+        to=Genre, through='TitleGenre', verbose_name='Жанр'
+    )
+    category = ForeignKey(
+        to=Category, related_name='title',
+        on_delete=CASCADE, verbose_name='Категория'
+    )
+
+
+class TitleGenre(Model):
+    """Модель для связи Title и Genre."""
+    title = ForeignKey(Title, on_delete=CASCADE)
+    genre = ForeignKey(Genre, on_delete=CASCADE)
 
 
 class Review(models.Model):
