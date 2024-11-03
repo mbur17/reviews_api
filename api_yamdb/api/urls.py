@@ -21,11 +21,8 @@ router.register(
 
 urlpatterns = [
     path('v1/', include(router.urls)),
-    path('categories/<slug:category_slug>/', categories),
-    path('genres/<slug:genre_slug>/', genres),
-    path('titles/<slug:title_slug>/', title),
-
-    path('categories/', categories),
-    path('genres/', genres),
-    path('titles/', titles),
+    path('v1/categories/<slug:category_slug>/', categories),
+    path('v1/genres/<slug:genre_slug>/', genres),
+    path('v1/titles/', titles),
+    path('v1/titles/<slug:title_slug>/', title),
 ]

@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -11,6 +12,8 @@ from .serializers import (
     CommentSerializer, ReviewSerializer,
     CategorySerializer, GenreSerializer, TitleSerializer
 )
+
+User = get_user_model()
 
 
 class ReviewViewSet(UpdateDestroyMixin, viewsets.ModelViewSet):
@@ -53,10 +56,12 @@ class CommentViewSet(UpdateDestroyMixin, viewsets.ModelViewSet):
 @api_view(['GET', 'POST', 'DELETE'])
 def categories(request, category_slug=None):
     """
-    Функция, обрабатывающая запросы к эндпоинтам:
-    categories/
+    Функция, обрабатывающая запросы к эндпоинту:
     categories/<slug:category_slug>/.
-    Обрабатываемые методы: GET, POST, DELETE
+    Обрабатываемые методы:
+    - GET: Получение списка всех категорий(Без токена)
+    - POST: Добавление новой категории(Администратор)
+    - DELETE: Удаление категории(Администратор)
     """
     method = request.method
     if method == 'GET':
@@ -79,7 +84,10 @@ def genres(request, genre_slug=None):
     """
     Функция, обрабатывающая запросы к эндпоинту
     genres/<slug:genre_slug>/.
-    Обрабатываемые методы: GET, POST, DELETE
+    Обрабатываемые методы:
+    - GET: Получение Списка всех жанров(Без токена)
+    - POST: Добавить жанр(Администратор)
+    - DELETE: Удаление жанра(Администратор).
     """
     method = request.method
     if method == 'GET':
@@ -98,11 +106,14 @@ def genres(request, genre_slug=None):
 
 
 @api_view(['GET', 'PATCH', 'DELETE'])
-def title(request, title_slug=None):
+def title(request, title_slug):
     """
     Функция, обрабатывающая запросы к эндпоинту
     titles/<slug:title_slug>/.
-    Обрабатываемые методы: GET, POST, PATCH, DELETE
+    Обрабатываемые методы:
+    - GET: Получение произведения(Без токена)
+    - PATCH: Частичное обновление информации о произведении(Администратор)
+    - DELETE: Удаление произведения(Администратор).
     """
     method = request.method
     _title = get_object_or_404(Title, slug=title_slug)
@@ -128,7 +139,9 @@ def title(request, title_slug=None):
 def titles(request):
     """
     Функция, обрабатывающая запросы к эндпоинту titles/.
-    Обрабатываемые методы: GET, POST
+    Обрабатываемые методы:
+    - GET: Получение списка всех произведений(Без токена)
+    - POST: Добавление произведения(Администратор).
     """
     if request.method == 'POST':
         serializer = TitleSerializer(data=request.data)
