@@ -34,8 +34,6 @@ class TokenView(APIView):
             token = AccessToken.for_user(user)
             return Response({'token': str(token)}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-<<<<<<< HEAD
-=======
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -61,4 +59,3 @@ class UserMeView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
->>>>>>> 4c84ee0ce5e1af1dd0ccbc3dc7cdcbf3a3aa5be3
