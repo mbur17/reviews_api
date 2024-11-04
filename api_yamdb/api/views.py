@@ -1,7 +1,4 @@
 from django.contrib.auth import get_user_model
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from http import HTTPStatus
 from reviews.models import Review, Title, Category, Genre, Title
 from .serializers import (
     CommentSerializer, ReviewSerializer,
