@@ -6,7 +6,7 @@ from reviews.models import Category, Genre, Title
 
 class CategoryFilter(FilterSet):
     """Класс для фильтрации категорий."""
-    name = CharFilter(lookup_expr='icontains')
+    name = CharFilter(field_name='name', lookup_expr='exact')
 
     class Meta:
         model = Category
@@ -15,7 +15,7 @@ class CategoryFilter(FilterSet):
 
 class GenreFilter(FilterSet):
     """Класс для фильтрации жанров."""
-    name = CharFilter(field_name='name', lookup_expr='icontains')
+    name = CharFilter(field_name='name', lookup_expr='exact')
 
     class Meta:
         model = Genre

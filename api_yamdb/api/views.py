@@ -13,7 +13,7 @@ from users.permissions import (
 )
 from .serializers import (
     CommentSerializer, ReviewSerializer,
-    CategorySerializer, GenreSerializer, TitleSerializer
+    CategorySerializer, GenreSerializer, TitleSerializer, TitleGETSerializer
 )
 from .filters import TitleFilter, CategoryFilter, GenreFilter
 
@@ -85,6 +85,13 @@ class CategoryViewSet(
     permission_classes = (IsAdmin,)
     filter_backends = (DjangoFilterBackend, )
     filterset_class = CategoryFilter
+    lookup_url_kwarg = 'slug'
+
+    def destroy(self, request, *args, **kwargs):
+        slug = kwargs.get('slug')
+        obj = get_object_or_404(Category, slug=slug)
+        obj.delete()
+        return Response(status=HTTPStatus.NO_CONTENT)
 
 
 class GenreViewSet(
@@ -97,15 +104,26 @@ class GenreViewSet(
     permission_classes = (IsAdmin,)
     filter_backends = (DjangoFilterBackend, )
     filterset_class = GenreFilter
+    lookup_url_kwarg = 'slug'
+
+    def destroy(self, request, *args, **kwargs):
+        slug = kwargs.get('slug')
+        obj = get_object_or_404(Genre, slug=slug)
+        obj.delete()
+        return Response(status=HTTPStatus.NO_CONTENT)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для эндпоинта titles/."""
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
-    serializer_class = TitleSerializer
     permission_classes = (IsAdmin, )
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitleFilter
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TitleGETSerializer
+        return TitleSerializer
 
     def update(self, request, *args, **kwargs):
         return Response(status=HTTPStatus.METHOD_NOT_ALLOWED)
@@ -116,7 +134,14 @@ class TitleViewSet(viewsets.ModelViewSet):
             raise ValidationError(
                 'Название произведения не может быть длиннее 256 символов.'
             )
-        return super().partial_update(request, *args, **kwargs)
+
+        title_id = kwargs.get('title_id')
+        title = get_object_or_404(Title, id=title_id)
+        serializer = TitleSerializer(title, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=HTTPStatus.OK)
+        return Response(serializer.errors, status=HTTPStatus.BAD_REQUEST)
 
 
 

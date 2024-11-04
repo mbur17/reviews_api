@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ParseError, ValidationError
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework.serializers import (
-    ModelSerializer, SlugRelatedField, IntegerField
+    ModelSerializer, SlugRelatedField, IntegerField,
 )
 
 from reviews.models import Comment, Review, Genre, Category, Title
@@ -53,6 +53,25 @@ class CategorySerializer(ModelSerializer):
         fields = ('name', 'slug', )
 
 
+class TitleGETSerializer(serializers.ModelSerializer):
+    """Сериализатор объектов класса Title при GET запросах."""
+    genre = GenreSerializer(many=True, read_only=True)
+    category = CategorySerializer(read_only=True)
+    rating = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Title
+        fields = (
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category'
+        )
+
+
 class TitleSerializer(ModelSerializer):
     """Сериализатор для модели Title."""
     genre = SlugRelatedField(
@@ -62,7 +81,7 @@ class TitleSerializer(ModelSerializer):
     )
     category = SlugRelatedField(
         queryset=Category.objects.all(),
-        slug_field='slug'
+        slug_field='slug',
     )
     rating = IntegerField(read_only=True)
 
