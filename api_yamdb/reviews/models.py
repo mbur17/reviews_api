@@ -1,51 +1,88 @@
+from datetime import datetime
+
+from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import (
     Model, CASCADE, ManyToManyField, ForeignKey,
-    CharField, SlugField, IntegerField, TextField,
+    CharField, SlugField, IntegerField, TextField, SET_NULL,
 )
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
 
-class Genre(Model):
-    """Модель жанра."""
-    name = CharField(max_length=256, verbose_name='Название')
-    slug = SlugField(max_length=50, verbose_name='Слаг')
-
-    class Meta:
-        verbose_name = 'жанр'
-        verbose_name_plural = 'Жанры'
-
-
 class Category(Model):
-    """Модель категории."""
-    name = CharField(max_length=256, verbose_name='Название')
-    slug = SlugField(max_length=50, verbose_name='Слаг')
+    name = CharField(max_length=256, verbose_name='Название', db_index=True)
+    slug = SlugField(
+        max_length=50, verbose_name='slug', unique=True,
+        validators=[
+            RegexValidator(
+                regex='^[-a-zA-Z0-9_]+$',
+                mesage='Слаг содержит недопустимый символ'
+            )
+        ]
+    )
 
     class Meta:
         verbose_name = 'категория'
         verbose_name_plural = 'Категории'
+        ordering = ('name',)
+
+
+class Genre(Model):
+    """Класс жанров."""
+
+    name = CharField(max_length=256, verbose_name='Hазвание', db_index=True)
+    slug = SlugField(
+        max_length=50, verbose_name='slug', unique=True,
+        validators=[
+            RegexValidator(
+                regex=r'^[-a-zA-Z0-9_]+$',
+                message='Слаг содержит недопустимый символ'
+            )
+        ]
+    )
+
+    class Meta:
+        verbose_name = 'жанр'
+        verbose_name_plural = 'Жанры'
+        ordering = ('name',)
 
 
 class Title(Model):
-    """Модель произведения."""
-    name = CharField(max_length=256, verbose_name='Название')
-    year = IntegerField(verbose_name='Год')
-    description = TextField(null=True, verbose_name='Описание')
+    name = CharField(max_length=256, verbose_name='Название', db_index=True)
+    year = IntegerField(
+        verbose_name='Год',
+        validators=[
+            MinValueValidator(0, 'Значение не может быть меньше 0'),
+            MaxValueValidator(
+                datetime.now().year,
+                f'Значение не может быть больше {datetime.now().year}')
+        ],
+        db_index=True
+    )
+    description = TextField(verbose_name='Описание', blank=True)
     genre = ManyToManyField(
-        to=Genre, through='TitleGenre', verbose_name='Жанр'
+        Genre, through='GenreTitle',
+        related_name='titles', verbose_name='Жанр'
     )
     category = ForeignKey(
-        to=Category, related_name='title',
-        on_delete=CASCADE, verbose_name='Категория'
+        Category, on_delete=SET_NULL,
+        related_name='titles', verbose_name='Категория', null=True
     )
 
+    class Meta:
+        verbose_name = 'произведение'
+        verbose_name_plural = 'Произведения'
+        ordering = ('-year', 'name')
 
-class TitleGenre(Model):
-    """Модель для связи Title и Genre."""
-    title = ForeignKey(Title, on_delete=CASCADE)
-    genre = ForeignKey(Genre, on_delete=CASCADE)
+
+class GenreTitle(Model):
+    """Вспомогательный класс, связывающий Genre и Title."""
+    genre = ForeignKey(Genre, on_delete=models.CASCADE, verbose_name='Жанр')
+    title = ForeignKey(
+        Title, on_delete=models.CASCADE, verbose_name='произведение'
+    )
 
 
 class Review(models.Model):
