@@ -9,7 +9,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from reviews.models import Review, Title, Category, Genre, Title
 from users.permissions import (
-    IsModeratorOrAuthorOrReadOnly, IsAdmin
+    IsModeratorOrAuthorOrReadOnly, IsAdminOrReadOnly
 )
 from .serializers import (
     CommentSerializer, ReviewSerializer,
@@ -82,7 +82,7 @@ class CategoryViewSet(
     """Вьюсет для эндпоинта categories/."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAdmin,)
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, )
     filterset_class = CategoryFilter
     lookup_url_kwarg = 'slug'
@@ -101,7 +101,7 @@ class GenreViewSet(
     """Вьюсет для эндпоинта genres/."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAdmin,)
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, )
     filterset_class = GenreFilter
     lookup_url_kwarg = 'slug'
@@ -116,7 +116,7 @@ class GenreViewSet(
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для эндпоинта titles/."""
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
-    permission_classes = (IsAdmin, )
+    permission_classes = (IsAdminOrReadOnly, )
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitleFilter
 
