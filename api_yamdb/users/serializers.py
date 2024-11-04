@@ -15,7 +15,10 @@ class SignupSerializer(serializers.Serializer):
         max_length=150,
         required=True
     )
-    email = serializers.EmailField(required=True)
+    email = serializers.EmailField(
+        max_length=254,
+        required=True
+    )
 
     def validate_username(self, value):
         """Запрещаем использование 'me' в качестве username."""
@@ -28,12 +31,13 @@ class SignupSerializer(serializers.Serializer):
     def validate(self, data):
         username = data.get('username')
         email = data.get('email')
+
         try:
             user = User.objects.get(username=username, email=email)
             self.create_or_update_confirmation_code(user)
-            raise serializers.ValidationError({
-                'detail': 'Код подтверждения был отправлен.'
-            })
+            data['user'] = user
+            data['detail'] = 'Код подтверждения был отправлен.'
+            return data
         except User.DoesNotExist:
             if User.objects.filter(username=username).exists():
                 raise serializers.ValidationError({
@@ -44,6 +48,12 @@ class SignupSerializer(serializers.Serializer):
                     'email': 'Пользователь с таким email уже существует.'
                 })
         return data
+
+    def create(self, validated_data):
+        """Создаём нового пользователя и генерируем код подтверждения."""
+        user = User.objects.create(**validated_data)
+        self.create_or_update_confirmation_code(user)
+        return user
 
     def create_or_update_confirmation_code(self, user):
         confirmation_code = get_random_string(length=6)
@@ -83,15 +93,18 @@ class UserSerializer(serializers.ModelSerializer):
         regex=r'^[\w.@+-]+\Z',
         max_length=150,
         required=True,
-        validators=(UniqueValidator(queryset=User.objects.all()),)
+        validators=[UniqueValidator(queryset=User.objects.all())]
     )
     email = serializers.EmailField(
         max_length=254,
         required=True,
-        validators=(UniqueValidator(queryset=User.objects.all()),)
+        validators=[UniqueValidator(queryset=User.objects.all())]
     )
-    first_name = serializers.CharField(max_length=150)
-    last_name = serializers.CharField(max_length=150)
+    first_name = serializers.CharField(max_length=150, required=False)
+    last_name = serializers.CharField(max_length=150, required=False)
+    role = serializers.ChoiceField(
+        choices=User.ROLE_CHOICES, required=False, default=User.USER
+    )
 
     class Meta:
         model = User
