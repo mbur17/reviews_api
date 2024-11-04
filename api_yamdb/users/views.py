@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from rest_framework import filters, viewsets, status
+from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -39,9 +39,8 @@ class TokenView(APIView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('username',)
+    permission_classes = (IsAuthenticated, IsAdminOrReadOnly)
+    lookup_field = 'username'
 
 
 class UserMeView(APIView):
