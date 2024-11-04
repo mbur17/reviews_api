@@ -15,10 +15,19 @@ from .serializers import (
 
 User = get_user_model()
 
+from django.db.models import Avg
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets
 
-class ReviewViewSet(UpdateDestroyMixin, viewsets.ModelViewSet):
+from api.serializers import CommentSerializer, ReviewSerializer
+from reviews.models import Review, Title
+from users.permissions import IsModeratorOrAuthorOrReadOnly
+
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsModeratorOrAuthorOrReadOnly,)
 
     def get_title(self):
         title_id = self.kwargs.get('title_id')
@@ -32,12 +41,30 @@ class ReviewViewSet(UpdateDestroyMixin, viewsets.ModelViewSet):
         serializer.save(
             author=self.request.user,
             title=self.get_title())
-        rating(self)
+        self.rating()
+
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        self.rating()
+
+    def perform_destroy(self, serializer):
+        super().perform_destroy(serializer)
+        self.rating()
+
+    def rating(self):
+        """Функция высчитывает и записывает среднюю оценку произведения"""
+        title = self.get_title()
+        average_rating = Review.objects.filter(
+            title=title).aggregate(avg=Avg('score'))['avg']
+        if average_rating is not None:
+            average_rating = round(average_rating)
+        title.rating = average_rating
+        title.save()
 
 
-class CommentViewSet(UpdateDestroyMixin, viewsets.ModelViewSet):
+class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsModeratorOrAuthorOrReadOnly,)
 
     def get_review(self):
         review_id = self.kwargs.get('review_id')
