@@ -1,7 +1,6 @@
 from rest_framework.exceptions import PermissionDenied
 
 from users.models import User
-from .utils import rating
 
 
 class UpdateDestroyMixin:

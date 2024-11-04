@@ -1,28 +1,18 @@
 from django.contrib.auth import get_user_model
-from rest_framework import permissions, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
 from http import HTTPStatus
-
-from .mixins import UpdateDestroyMixin
-from .utils import rating
 from reviews.models import Review, Title, Category, Genre, Title
 from .serializers import (
     CommentSerializer, ReviewSerializer,
     CategorySerializer, GenreSerializer, TitleSerializer
 )
-
-User = get_user_model()
-
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-
-from api.serializers import CommentSerializer, ReviewSerializer
-from reviews.models import Review, Title
 from users.permissions import IsModeratorOrAuthorOrReadOnly
 
+User = get_user_model()
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

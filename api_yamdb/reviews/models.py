@@ -1,22 +1,13 @@
-from django.contrib.auth import get_user_model
 from django.db import models
-<<<<<<< HEAD
 from django.db.models import (
     Model, CASCADE, ManyToManyField, ForeignKey,
     CharField, SlugField, IntegerField, TextField,
 )
-=======
 from django.contrib.auth import get_user_model
 
-
-User = get_user_model()
->>>>>>> cfe172e02b541d814fbd51e58e5da65576d2e030
-
-
 User = get_user_model()
 
 
-<<<<<<< HEAD
 class Genre(Model):
     """Модель жанра."""
     name = CharField(max_length=256, verbose_name='Название')
@@ -57,8 +48,6 @@ class TitleGenre(Model):
     genre = ForeignKey(Genre, on_delete=CASCADE)
 
 
-=======
->>>>>>> cfe172e02b541d814fbd51e58e5da65576d2e030
 class Review(models.Model):
     text = models.TextField(blank=False)
     author = models.ForeignKey(User,
@@ -67,11 +56,7 @@ class Review(models.Model):
     title = models.ForeignKey(Title,
                               on_delete=models.CASCADE,
                               related_name='reviews')
-<<<<<<< HEAD
-    score = models.IntegerField(blank=False)
-=======
     score = models.IntegerField(blank=True, null=True)
->>>>>>> cfe172e02b541d814fbd51e58e5da65576d2e030
     pub_date = models.DateTimeField('Дата добавления',
                                     auto_now_add=True,
                                     db_index=True)
