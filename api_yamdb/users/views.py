@@ -46,10 +46,10 @@ class TokenView(APIView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by('id')
     serializer_class = UserSerializer
-    permission_classes = [IsAdmin]
+    permission_classes = (IsAdmin,)
     lookup_field = 'username'
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['username']
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
 
     def update(self, request, *args, **kwargs):
         # Явно запрещаем PUT-запросы.
@@ -59,7 +59,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class UserMeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request):
         serializer = MeSerializer(request.user)

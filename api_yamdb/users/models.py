@@ -24,17 +24,6 @@ class User(AbstractUser):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
-    # Свойства для проверки роли:
-    # Проверка, является ли пользователь аутентифицированным пользователем.
-    @property
-    def is_user(self):
-        return self.role == self.USER
-
-    # Проверка, является ли пользователь модератором.
-    @property
-    def is_moderator(self):
-        return self.role == self.MODERATOR
-
     def clean(self):
         """Запрещаем использовать 'me' в качестве имени пользователя."""
         if self.username.lower() == 'me':
