@@ -1,15 +1,21 @@
+from http import HTTPStatus
+
 from django.contrib.auth import get_user_model
-from reviews.models import Review, Title, Category, Genre, Title
-from .serializers import (
-    CommentSerializer, ReviewSerializer,
-    CategorySerializer, GenreSerializer, TitleSerializer, TitleGETSerializer
-)
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, mixins
+from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
+from reviews.models import Review, Title, Category, Genre, Title
 from users.permissions import (
     IsModeratorOrAuthorOrReadOnly, IsAdmin
 )
+from .serializers import (
+    CommentSerializer, ReviewSerializer,
+    CategorySerializer, GenreSerializer, TitleSerializer
+)
+from .filters import TitleFilter, CategoryFilter, GenreFilter
 
 User = get_user_model()
 
@@ -77,6 +83,8 @@ class CategoryViewSet(
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdmin,)
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = CategoryFilter
 
 
 class GenreViewSet(
@@ -87,6 +95,8 @@ class GenreViewSet(
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdmin,)
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = GenreFilter
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -94,9 +104,19 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     serializer_class = TitleSerializer
     permission_classes = (IsAdmin, )
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = TitleFilter
 
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return TitleGETSerializer
-        return TitleSerializer
+    def update(self, request, *args, **kwargs):
+        return Response(status=HTTPStatus.METHOD_NOT_ALLOWED)
+
+    def partial_update(self, request, *args, **kwargs):
+        name_length = len(request.data.get('name'))
+        if name_length > 256:
+            raise ValidationError(
+                'Название произведения не может быть длиннее 256 символов.'
+            )
+        return super().partial_update(request, *args, **kwargs)
+
+
 

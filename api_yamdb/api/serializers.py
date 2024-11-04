@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework.exceptions import ParseError
+from rest_framework.exceptions import ParseError, ValidationError
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework.serializers import (
     ModelSerializer, SlugRelatedField, IntegerField
@@ -53,25 +53,6 @@ class CategorySerializer(ModelSerializer):
         fields = ('name', 'slug', )
 
 
-class TitleGETSerializer:
-    """Сериализатор для GET запросов."""
-    genre = GenreSerializer(read_only=True, many=True)
-    category = CategorySerializer(read_only=True)
-    rating = IntegerField(read_only=True)
-
-    class Meta:
-        model = Title
-        fields = (
-            'id',
-            'name',
-            'year',
-            'rating',
-            'description',
-            'genre',
-            'category'
-        )
-
-
 class TitleSerializer(ModelSerializer):
     """Сериализатор для модели Title."""
     genre = SlugRelatedField(
@@ -83,17 +64,16 @@ class TitleSerializer(ModelSerializer):
         queryset=Category.objects.all(),
         slug_field='slug'
     )
+    rating = IntegerField(read_only=True)
 
     class Meta:
         model = Title
         fields = (
+            'id',
             'name',
             'year',
+            'rating',
             'description',
             'genre',
             'category',
         )
-
-    def to_representation(self, instance):
-        serializer = TitleGETSerializer(instance)
-        return serializer.data
