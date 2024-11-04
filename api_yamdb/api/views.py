@@ -135,8 +135,7 @@ class TitleViewSet(viewsets.ModelViewSet):
                 'Название произведения не может быть длиннее 256 символов.'
             )
 
-        title_id = kwargs.get('pk')
-        title = get_object_or_404(Title, pk=title_id)
+        title = get_object_or_404(Title, pk=kwargs.get('pk'))
         serializer = TitleSerializer(title, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
