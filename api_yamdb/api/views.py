@@ -8,7 +8,7 @@ from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, mixins
 from users.permissions import (
-    IsModeratorOrAuthorOrReadOnly, IsAdminOrReadOnly
+    IsModeratorOrAuthorOrReadOnly, IsAdmin
 )
 
 User = get_user_model()
@@ -76,6 +76,7 @@ class CategoryViewSet(
     """Вьюсет для эндпоинта categories/."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = (IsAdmin,)
 
 
 class GenreViewSet(
@@ -85,13 +86,14 @@ class GenreViewSet(
     """Вьюсет для эндпоинта genres/."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    permission_classes = (IsAdmin,)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для эндпоинта titles/."""
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     serializer_class = TitleSerializer
-    permission_classes = (IsAdminOrReadOnly, )
+    permission_classes = (IsAdmin, )
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
