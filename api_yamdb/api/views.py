@@ -9,8 +9,10 @@ from .serializers import (
 )
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, mixins, permissions
-from users.permissions import IsModeratorOrAuthorOrReadOnly
+from rest_framework import viewsets, mixins
+from users.permissions import (
+    IsModeratorOrAuthorOrReadOnly, IsAdminOrReadOnly
+)
 
 User = get_user_model()
 
@@ -92,18 +94,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для эндпоинта titles/."""
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     serializer_class = TitleSerializer
-
-    def check_permissions(self, request):
-        return (
-                request.method in permissions.SAFE_METHODS
-                or request.user.is_authenticated
-                and (
-                        request.user.is_superuser
-                        or request.user.is_staff
-                        or request.user.is_admin
-                        or request.user.is_moderator
-                     )
-        )
+    permission_classes = (IsAdminOrReadOnly, )
 
     def get_serializer_class(self):
         if self.request.method == 'GET':

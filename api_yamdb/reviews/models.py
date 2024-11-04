@@ -18,7 +18,7 @@ class Category(Model):
         validators=[
             RegexValidator(
                 regex='^[-a-zA-Z0-9_]+$',
-                mesage='Слаг содержит недопустимый символ'
+                message='Слаг содержит недопустимый символ'
             )
         ]
     )
@@ -57,7 +57,8 @@ class Title(Model):
             MinValueValidator(0, 'Значение не может быть меньше 0'),
             MaxValueValidator(
                 datetime.now().year,
-                f'Значение не может быть больше {datetime.now().year}')
+                message=f'Значение не может быть больше '
+                        f'{datetime.now().year}')
         ],
         db_index=True
     )
