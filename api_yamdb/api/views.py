@@ -37,8 +37,10 @@ class ReviewViewSet(viewsets.ModelViewSet):
         """Функция высчитывает и записывает среднюю оценку произведения"""
         title = self.get_title()
         average_rating = Review.objects.filter(
-            title=title).aggregate(avg=Avg('score'))
-        title.rating = round(average_rating['avg'])
+            title=title).aggregate(avg=Avg('score'))['avg']
+        if average_rating is not None:
+            average_rating = round(average_rating)
+        title.rating = average_rating
         title.save()
 
 

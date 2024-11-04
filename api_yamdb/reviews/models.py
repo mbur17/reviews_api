@@ -9,14 +9,6 @@ class Title(models.Model):
     ...
 
 
-class Category(models.Model):
-    ...
-
-
-class Genre(models.Model):
-    ...
-
-
 class Review(models.Model):
     text = models.TextField(blank=False)
     author = models.ForeignKey(User,
