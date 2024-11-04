@@ -5,6 +5,7 @@ from django.utils.crypto import get_random_string
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
+
 User = get_user_model()
 
 
@@ -12,13 +13,9 @@ class SignupSerializer(serializers.Serializer):
     username = serializers.RegexField(
         regex=r'^[\w.@+-]+\Z',
         max_length=150,
-        required=True,
-        validators=(UniqueValidator(queryset=User.objects.all()),)
+        required=True
     )
-    email = serializers.EmailField(
-        required=True,
-        validators=(UniqueValidator(queryset=User.objects.all()),)
-    )
+    email = serializers.EmailField(required=True)
 
     def validate_username(self, value):
         """Запрещаем использование 'me' в качестве username."""
@@ -28,9 +25,27 @@ class SignupSerializer(serializers.Serializer):
             )
         return value
 
-    def create(self, validated_data):
-        user, created = User.objects.get_or_create(**validated_data)
-        # Генерируем случайный код подтверждения.
+    def validate(self, data):
+        username = data.get('username')
+        email = data.get('email')
+        try:
+            user = User.objects.get(username=username, email=email)
+            self.create_or_update_confirmation_code(user)
+            raise serializers.ValidationError({
+                'detail': 'Код подтверждения был отправлен.'
+            })
+        except User.DoesNotExist:
+            if User.objects.filter(username=username).exists():
+                raise serializers.ValidationError({
+                    'username': 'Пользователь с таким username уже существует.'
+                })
+            if User.objects.filter(email=email).exists():
+                raise serializers.ValidationError({
+                    'email': 'Пользователь с таким email уже существует.'
+                })
+        return data
+
+    def create_or_update_confirmation_code(self, user):
         confirmation_code = get_random_string(length=6)
         user.confirmation_code = confirmation_code
         user.save()
@@ -42,7 +57,6 @@ class SignupSerializer(serializers.Serializer):
             recipient_list=(user.email,),
             fail_silently=False,
         )
-        return user
 
 
 class TokenSerializer(serializers.Serializer):
@@ -72,6 +86,7 @@ class UserSerializer(serializers.ModelSerializer):
         validators=(UniqueValidator(queryset=User.objects.all()),)
     )
     email = serializers.EmailField(
+        max_length=254,
         required=True,
         validators=(UniqueValidator(queryset=User.objects.all()),)
     )
@@ -92,6 +107,7 @@ class MeSerializer(serializers.ModelSerializer):
         validators=(UniqueValidator(queryset=User.objects.all()),)
     )
     email = serializers.EmailField(
+        max_length=254,
         validators=(UniqueValidator(queryset=User.objects.all()),)
     )
     first_name = serializers.CharField(max_length=150)
