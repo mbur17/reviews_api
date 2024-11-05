@@ -6,6 +6,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError, NotFound
 from rest_framework.validators import UniqueValidator
 
+from .constants import MAX_LENGTH_6, MAX_LENGTH_150, MAX_LENGTH_254
 
 User = get_user_model()
 
@@ -13,11 +14,11 @@ User = get_user_model()
 class SignupSerializer(serializers.Serializer):
     username = serializers.RegexField(
         regex=r'^[\w.@+-]+\Z',
-        max_length=150,
+        max_length=MAX_LENGTH_150,
         required=True
     )
     email = serializers.EmailField(
-        max_length=254,
+        max_length=MAX_LENGTH_254,
         required=True
     )
 
@@ -73,10 +74,12 @@ class SignupSerializer(serializers.Serializer):
 class TokenSerializer(serializers.Serializer):
     username = serializers.RegexField(
         regex=r'^[\w.@+-]+\Z',
-        max_length=150,
+        max_length=MAX_LENGTH_150,
         required=True
     )
-    confirmation_code = serializers.CharField(max_length=6, required=True)
+    confirmation_code = serializers.CharField(
+        max_length=MAX_LENGTH_6, required=True
+    )
 
     def validate(self, data):
         username = data.get('username')
@@ -94,17 +97,21 @@ class TokenSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.RegexField(
         regex=r'^[\w.@+-]+\Z',
-        max_length=150,
+        max_length=MAX_LENGTH_150,
         required=True,
         validators=[UniqueValidator(queryset=User.objects.all())]
     )
     email = serializers.EmailField(
-        max_length=254,
+        max_length=MAX_LENGTH_254,
         required=True,
         validators=[UniqueValidator(queryset=User.objects.all())]
     )
-    first_name = serializers.CharField(max_length=150, required=False)
-    last_name = serializers.CharField(max_length=150, required=False)
+    first_name = serializers.CharField(
+        max_length=MAX_LENGTH_150, required=False
+    )
+    last_name = serializers.CharField(
+        max_length=MAX_LENGTH_150, required=False
+    )
     role = serializers.ChoiceField(
         choices=User.ROLE_CHOICES, required=False, default=User.USER
     )
@@ -119,15 +126,15 @@ class UserSerializer(serializers.ModelSerializer):
 class MeSerializer(serializers.ModelSerializer):
     username = serializers.RegexField(
         regex=r'^[\w.@+-]+\Z',
-        max_length=150,
+        max_length=MAX_LENGTH_150,
         validators=(UniqueValidator(queryset=User.objects.all()),)
     )
     email = serializers.EmailField(
-        max_length=254,
+        max_length=MAX_LENGTH_254,
         validators=(UniqueValidator(queryset=User.objects.all()),)
     )
-    first_name = serializers.CharField(max_length=150)
-    last_name = serializers.CharField(max_length=150)
+    first_name = serializers.CharField(max_length=MAX_LENGTH_150)
+    last_name = serializers.CharField(max_length=MAX_LENGTH_150)
 
     class Meta:
         model = User
