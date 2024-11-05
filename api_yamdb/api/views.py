@@ -8,7 +8,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, mixins
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
-from reviews.models import Review, Title, Category, Genre, Title
+from reviews.models import Review, Title, Category, Genre
 from users.permissions import (
     IsModeratorOrAuthorOrReadOnly, IsAdminOrReadOnly
 )
@@ -41,24 +41,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
         serializer.save(
             author=author,
             title=title)
-        self.rating()
-
-    def perform_update(self, serializer):
-        super().perform_update(serializer)
-        self.rating()
-
-    def perform_destroy(self, serializer):
-        super().perform_destroy(serializer)
-        self.rating()
-
-    def rating(self):
-        """Функция высчитывает и записывает среднюю оценку произведения"""
-        title = self.get_title()
-        average_rating = title.reviews.all().aggregate(avg=Avg('score'))['avg']
-        if average_rating is not None:
-            average_rating = round(average_rating)
-        title.rating = average_rating
-        title.save()
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -145,6 +127,3 @@ class TitleViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=HTTPStatus.OK)
         return Response(serializer.errors, status=HTTPStatus.BAD_REQUEST)
-
-
-
