@@ -12,7 +12,6 @@ from reviews.models import Review, Title, Category, Genre
 from users.permissions import (
     IsModeratorOrAdminOrAuthorOrReadOnly, IsAdminOrReadOnly
 )
-from .mixins import UpdateMixin
 from .serializers import (
     CommentSerializer, ReviewSerializer,
     CategorySerializer, GenreSerializer, TitleSerializer, TitleGETSerializer
@@ -23,12 +22,13 @@ from .filters import TitleFilter, CategoryFilter, GenreFilter
 User = get_user_model()
 
 
-class ReviewViewSet(UpdateMixin, viewsets.ModelViewSet):
+class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет для эндпоинта reviews/."""
 
     serializer_class = ReviewSerializer
     permission_classes = (IsModeratorOrAdminOrAuthorOrReadOnly,
                           permissions.IsAuthenticatedOrReadOnly)
+    http_method_names = ('get', 'patch', 'post', 'delete')
 
     def get_title(self):
         title_id = self.kwargs.get('title_id')
@@ -47,12 +47,13 @@ class ReviewViewSet(UpdateMixin, viewsets.ModelViewSet):
             title=title)
 
 
-class CommentViewSet(UpdateMixin, viewsets.ModelViewSet):
+class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет для эндпоинта comments/."""
 
     serializer_class = CommentSerializer
     permission_classes = (IsModeratorOrAdminOrAuthorOrReadOnly, permissions.
                           IsAuthenticatedOrReadOnly)
+    http_method_names = ('get', 'patch', 'post', 'delete')
 
     def get_review(self):
         review_id = self.kwargs.get('review_id')
