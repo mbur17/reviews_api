@@ -148,6 +148,9 @@ dmypy.json
 # папки со статикой и медиа
 media/
 
+postman_collection/
+
 # e-mails
 sent_emails/
+
 
