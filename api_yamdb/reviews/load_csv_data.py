@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand
-from django.db import IntegrityError
 
 from api_yamdb.api_yamdb.settings import CSV_FILES_DIR
 from .models import Category, Genre, Title, GenreTitle, Review, Comment
@@ -37,8 +36,12 @@ FIELDS = {
 }
 
 
-def change_foreign_values(data_csv):
-    """Изменяет значения."""
+def change_foreign_values(data_csv: dict):
+    """
+    Изменяет значения внешних ключей в словаре данных.
+    Параметры: data_csv (dict): Словарь с данными из CSV-файла.
+    Возвращает: dict: Словарь с измененными значениями внешних ключей.
+    """
     data_csv_copy = data_csv.copy()
     for field_key, field_value in data_csv.items():
         if field_key in FIELDS.keys():
@@ -48,7 +51,15 @@ def change_foreign_values(data_csv):
     return data_csv_copy
 
 
-def load_csv(file, class_name):
+def load_csv(file: str, class_name):
+    """
+    Загружает данные из CSV-файла в указанную модель.
+    Параметры:
+        file (str): Имя CSV-файла без расширения.
+        class_name (Model): Модель Django, в которую будут загружены данные.
+    Возвращает:
+        None
+    """
     data = open_csv(file)
     rows = data[1:]
     for row in rows:
@@ -66,13 +77,27 @@ def load_csv(file, class_name):
 
 
 class Command(BaseCommand):
+    """
+    Команда для загрузки данных из CSV-файлов в базу данных.
+    Используется для инициализации базы данных данными из файлов.
+    """
     def handle(self, *args, **options):
+        """
+        Основной метод для выполнения команды.
+        """
         for key, value in FILES_CLASSES.items():
             print(f'загрузка таблицы {value.__qualname__}')
             load_csv(key, value)
 
 
 def open_csv(file_name):
+    """
+    Открывает и читает данные из CSV-файла.
+    Параметры:
+        file_name (str): Имя CSV-файла без расширения.
+    Возвращает:
+        list: Список строк из CSV-файла или None в случае ошибки.
+    """
     path = os.path.join(CSV_FILES_DIR, f'{file_name}.csv')
     try:
         with open(path, encoding='utf-8') as file:
