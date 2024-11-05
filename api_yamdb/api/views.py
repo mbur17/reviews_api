@@ -19,6 +19,7 @@ from .serializers import (
 )
 from .filters import TitleFilter, CategoryFilter, GenreFilter
 
+
 User = get_user_model()
 
 
@@ -31,16 +32,15 @@ class ReviewViewSet(UpdateMixin, viewsets.ModelViewSet):
 
     def get_title(self):
         title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Title, pk=title_id)
-        return title
+        return get_object_or_404(Title, pk=title_id)
 
     def get_queryset(self):
-        return self.get_title().reviews.all().order_by('pub_date')
+        return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
         author = self.request.user
         title = self.get_title()
-        if Review.objects.filter(author=author, title=title):
+        if author.reviews.all() and title.reviews.all():
             raise ParseError('Разрешается только 1 отзыв на произведение')
         serializer.save(
             author=author,
@@ -56,11 +56,10 @@ class CommentViewSet(UpdateMixin, viewsets.ModelViewSet):
 
     def get_review(self):
         review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, pk=review_id)
-        return review
+        return get_object_or_404(Review, pk=review_id)
 
     def get_queryset(self):
-        return self.get_review().comments.all().order_by('pub_date')
+        return self.get_review().comments.all()
 
     def perform_create(self, serializer):
         serializer.save(

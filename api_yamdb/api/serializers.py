@@ -1,10 +1,14 @@
 from rest_framework import serializers
-from rest_framework.exceptions import ParseError, ValidationError
+from rest_framework.exceptions import ValidationError
 from rest_framework.serializers import (
     ModelSerializer, SlugRelatedField, IntegerField,
 )
 
 from reviews.models import Comment, Review, Genre, Category, Title
+
+
+MAX_VALUE = 10
+MIN_VALUE = 1
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -13,15 +17,11 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         slug_field='username', read_only=True)
     title = serializers.PrimaryKeyRelatedField(read_only=True)
+    score = serializers.IntegerField(max_value=MAX_VALUE, min_value=MIN_VALUE)
 
     class Meta:
         fields = ('id', 'text', 'author', 'title', 'score', 'pub_date')
         model = Review
-
-    def validate_score(self, value):
-        if value < 1 or value > 10:
-            raise ParseError('Рейтинг должен быть от 1 до 10')
-        return value
 
 
 class CommentSerializer(serializers.ModelSerializer):

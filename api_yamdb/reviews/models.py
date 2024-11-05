@@ -13,6 +13,8 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 NAME_MAX_LENGTH = 256
 SLUG_MAX_LENGTH = 50
+MAX_VALUE = 10
+MIN_VALUE = 1
 
 
 class Category(Model):
@@ -125,12 +127,18 @@ class Review(models.Model):
     title = models.ForeignKey(Title,
                               on_delete=models.CASCADE,
                               related_name='reviews')
-    score = models.IntegerField(blank=True, null=True)
+    score = models.PositiveSmallIntegerField(blank=True,
+                                             null=True,
+                                             validators=[
+                                                 MaxValueValidator(MAX_VALUE),
+                                                 MinValueValidator(MIN_VALUE)])
     pub_date = models.DateTimeField('Дата добавления',
                                     auto_now_add=True,
                                     db_index=True)
 
     class Meta:
+
+        ordering = ('pub_date',)
 
         constraints = [
             models.UniqueConstraint(fields=['author', 'title'],
@@ -153,6 +161,10 @@ class Comment(models.Model):
     pub_date = models.DateTimeField('Дата добавления',
                                     auto_now_add=True,
                                     db_index=True)
+
+    class Meta:
+
+        ordering = ('pub_date',)
 
     def __str__(self):
         return self.text
