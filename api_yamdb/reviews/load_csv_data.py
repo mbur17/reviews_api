@@ -105,7 +105,3 @@ def open_csv(file_name):
     except Exception as ex:
         print(ex)
         return
-
-
-
-
