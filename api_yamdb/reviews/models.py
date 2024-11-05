@@ -110,7 +110,10 @@ class GenreTitle(Model):
     class Meta:
         verbose_name = 'жанр-произведение'
         verbose_name_plural = 'Жанры-произведения'
-        ordering = ('genre',)
+        ordering = ('title',)
+
+    def __str__(self):
+        return f'{self.title}-{self.genre}'
 
 
 class Review(models.Model):
