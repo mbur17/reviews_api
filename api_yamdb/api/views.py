@@ -1,12 +1,8 @@
 from django.contrib.auth import get_user_model
-<<<<<<< HEAD
 from rest_framework.exceptions import ParseError
-=======
->>>>>>> 04dc0c9fb9f7c6da6c3f4741f255370e30c3bfed
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.exceptions import ParseError, MethodNotAllowed
 from rest_framework import viewsets, mixins, permissions
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
