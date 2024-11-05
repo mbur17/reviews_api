@@ -1,11 +1,11 @@
+import csv
+import os
+
 from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand
 
 from api_yamdb.api_yamdb.settings import CSV_FILES_DIR
 from .models import Category, Genre, Title, GenreTitle, Review, Comment
-
-import csv
-import os
 
 User = get_user_model()
 FILES_CLASSES = {

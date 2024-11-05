@@ -5,14 +5,14 @@ from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, mixins, permissions
-from rest_framework.exceptions import ParseError, ValidationError
+from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 
 from reviews.models import Review, Title, Category, Genre
 from users.permissions import (
     IsModeratorOrAdminOrAuthorOrReadOnly, IsAdminOrReadOnly
 )
-from api.mixins import UpdateMixin
+from .mixins import UpdateMixin
 from .serializers import (
     CommentSerializer, ReviewSerializer,
     CategorySerializer, GenreSerializer, TitleSerializer, TitleGETSerializer
@@ -137,25 +137,16 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOrReadOnly, )
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitleFilter
+    http_method_names = ('get', 'patch', 'post', 'delete')
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return TitleGETSerializer
         return TitleSerializer
 
-    def update(self, request, *args, **kwargs):
-        return Response(status=HTTPStatus.METHOD_NOT_ALLOWED)
-
     def partial_update(self, request, *args, **kwargs):
-        name_length = len(request.data.get('name'))
-        if name_length > 256:
-            raise ValidationError(
-                'Название произведения не может быть длиннее 256 символов.'
-            )
-
         title = get_object_or_404(Title, pk=kwargs.get('pk'))
         serializer = TitleSerializer(title, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=HTTPStatus.OK)
-        return Response(serializer.errors, status=HTTPStatus.BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=HTTPStatus.OK)
