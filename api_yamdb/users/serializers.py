@@ -3,6 +3,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.crypto import get_random_string
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError, NotFound
 from rest_framework.validators import UniqueValidator
 
 
@@ -23,7 +24,7 @@ class SignupSerializer(serializers.Serializer):
     def validate_username(self, value):
         """Запрещаем использование 'me' в качестве username."""
         if value.lower() == 'me':
-            raise serializers.ValidationError(
+            raise ValidationError(
                 'Использовать "me" в качестве username запрещено.'
             )
         return value
@@ -40,11 +41,11 @@ class SignupSerializer(serializers.Serializer):
             return data
         except User.DoesNotExist:
             if User.objects.filter(username=username).exists():
-                raise serializers.ValidationError({
+                raise ValidationError({
                     'username': 'Пользователь с таким username уже существует.'
                 })
             if User.objects.filter(email=email).exists():
-                raise serializers.ValidationError({
+                raise ValidationError({
                     'email': 'Пользователь с таким email уже существует.'
                 })
         return data
@@ -75,15 +76,17 @@ class TokenSerializer(serializers.Serializer):
         max_length=150,
         required=True
     )
-    confirmation_code = serializers.CharField(max_length=6)
+    confirmation_code = serializers.CharField(max_length=6, required=True)
 
     def validate(self, data):
+        username = data.get('username')
+        confirmation_code = data.get('confirmation_code')
         try:
-            user = User.objects.get(username=data.get('username'))
+            user = User.objects.get(username=username)
         except User.DoesNotExist:
-            raise serializers.ValidationError('Пользователь не найден.')
-        if user.confirmation_code != data.get('confirmation_code'):
-            raise serializers.ValidationError('Неверный код подтверждения.')
+            raise NotFound('Пользователь не найден.')
+        if user.confirmation_code != confirmation_code:
+            raise ValidationError('Неверный код подтверждения.')
         data['user'] = user
         return data
 
