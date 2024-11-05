@@ -92,6 +92,11 @@ class GenreTitle(Model):
         Title, on_delete=models.CASCADE, verbose_name='произведение'
     )
 
+    class Meta:
+        verbose_name = 'жанр-произведение'
+        verbose_name_plural = 'Жанры-произведения'
+        ordering = ('genre',)
+
 
 class Review(models.Model):
     """Класс отзыва."""
