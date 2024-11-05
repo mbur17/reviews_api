@@ -24,6 +24,11 @@ class User(AbstractUser):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
+    # Проверка, является ли пользователь модератором
+    @property
+    def is_moderator(self):
+        return self.role == self.MODERATOR
+
     def clean(self):
         """Запрещаем использовать 'me' в качестве имени пользователя."""
         if self.username.lower() == 'me':
