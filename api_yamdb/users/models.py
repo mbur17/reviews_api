@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from .constants import MAX_LENGTH_6, MAX_LENGTH_9
+
 
 class User(AbstractUser):
     USER = 'user'
@@ -16,13 +18,21 @@ class User(AbstractUser):
 
     email = models.EmailField(unique=True, blank=False, null=False)
     bio = models.TextField(blank=True)
-    role = models.CharField(max_length=9, choices=ROLE_CHOICES, default=USER)
+    role = models.CharField(
+        max_length=MAX_LENGTH_9, choices=ROLE_CHOICES, default=USER
+    )
     # Поле для хранения кода подтверждения.
-    confirmation_code = models.CharField(max_length=6, blank=True, null=True)
+    confirmation_code = models.CharField(
+        max_length=MAX_LENGTH_6, blank=True, null=True
+    )
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+        ordering = ('username',)
+
+    def __str__(self):
+        return f'{self.username} ({self.role})'
 
     # Проверка, является ли пользователь модератором.
     @property
