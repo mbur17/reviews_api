@@ -1,13 +1,14 @@
-from http import HTTPStatus
-
 from django.contrib.auth import get_user_model
-from rest_framework.exceptions import ParseError, MethodNotAllowed
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.exceptions import ParseError, MethodNotAllowed
 from rest_framework import viewsets, mixins, permissions
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
+
+from http import HTTPStatus
+
 from reviews.models import Review, Title, Category, Genre
 from users.permissions import (
     IsModeratorOrAuthorOrReadOnly, IsAdminOrReadOnly
@@ -75,7 +76,14 @@ class CategoryViewSet(
     mixins.CreateModelMixin, mixins.ListModelMixin,
     mixins.DestroyModelMixin, viewsets.GenericViewSet
 ):
-    """Вьюсет для эндпоинта categories/."""
+    """
+    Вьюсет, обрабатывающий запросы к эндпоинту:
+    categories/<slug:category_slug>/.
+    Обрабатываемые методы:
+    - GET: Получение списка всех категорий(Без токена)
+    - POST: Добавление новой категории(Администратор)
+    - DELETE: Удаление категории(Администратор)
+    """
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
@@ -94,7 +102,14 @@ class GenreViewSet(
     mixins.CreateModelMixin, mixins.ListModelMixin,
     mixins.DestroyModelMixin, viewsets.GenericViewSet
 ):
-    """Вьюсет для эндпоинта genres/."""
+    """
+    Вьюсет, обрабатывающий запросы к эндпоинту
+    genres/<slug:genre_slug>/.
+    Обрабатываемые методы:
+    - GET: Получение Списка всех жанров(Без токена)
+    - POST: Добавить жанр(Администратор)
+    - DELETE: Удаление жанра(Администратор).
+    """
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
@@ -110,7 +125,16 @@ class GenreViewSet(
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    """Вьюсет для эндпоинта titles/."""
+    """
+    Вьюсет, обрабатывающий запросы к эндпоинту
+    titles/<slug:title_slug>/.
+    Обрабатываемые методы:
+    - GET: Получение произведения(Без токена)
+    - GET: Получение списка всех произведений(Без токена)
+    - POST: Добавление произведения(Администратор).
+    - PATCH: Частичное обновление информации о произведении(Администратор)
+    - DELETE: Удаление произведения(Администратор).
+    """
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     permission_classes = (IsAdminOrReadOnly, )
     filter_backends = (DjangoFilterBackend, )
