@@ -1,8 +1,4 @@
 from django.contrib.auth import get_user_model
-<<<<<<< HEAD
-from rest_framework.exceptions import ParseError
-=======
->>>>>>> 04dc0c9fb9f7c6da6c3f4741f255370e30c3bfed
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -17,7 +13,7 @@ from reviews.models import Review, Title, Category, Genre
 from users.permissions import (
     IsModeratorOrAuthorOrReadOnly, IsAdminOrReadOnly
 )
-from api.mixins import UpdateMixin
+from .mixins import UpdateMixin
 from .serializers import (
     CommentSerializer, ReviewSerializer,
     CategorySerializer, GenreSerializer, TitleSerializer, TitleGETSerializer
