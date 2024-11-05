@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
-from rest_framework.exceptions import ParseError, MethodNotAllowed
+from rest_framework.exceptions import ParseError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -12,6 +12,7 @@ from reviews.models import Review, Title, Category, Genre
 from users.permissions import (
     IsModeratorOrAuthorOrReadOnly, IsAdminOrReadOnly
 )
+from api.mixins import UpdateMixin
 from .serializers import (
     CommentSerializer, ReviewSerializer,
     CategorySerializer, GenreSerializer, TitleSerializer, TitleGETSerializer
@@ -21,9 +22,12 @@ from .filters import TitleFilter, CategoryFilter, GenreFilter
 User = get_user_model()
 
 
-class ReviewViewSet(viewsets.ModelViewSet):
+class ReviewViewSet(UpdateMixin, viewsets.ModelViewSet):
+    """Вьюсет для эндпоинта reviews/."""
+
     serializer_class = ReviewSerializer
-    permission_classes = (IsModeratorOrAuthorOrReadOnly, permissions.IsAuthenticatedOrReadOnly)
+    permission_classes = (IsModeratorOrAuthorOrReadOnly,
+                          permissions.IsAuthenticatedOrReadOnly)
 
     def get_title(self):
         title_id = self.kwargs.get('title_id')
@@ -41,16 +45,14 @@ class ReviewViewSet(viewsets.ModelViewSet):
         serializer.save(
             author=author,
             title=title)
-    
-    def perform_update(self, serializer):
-        if self.request.method == 'PUT':
-            raise MethodNotAllowed('Метод PUT запрещен')
-        super().perform_update(serializer)
 
 
-class CommentViewSet(viewsets.ModelViewSet):
+class CommentViewSet(UpdateMixin, viewsets.ModelViewSet):
+    """Вьюсет для эндпоинта comments/."""
+
     serializer_class = CommentSerializer
-    permission_classes = (IsModeratorOrAuthorOrReadOnly, permissions.IsAuthenticatedOrReadOnly)
+    permission_classes = (IsModeratorOrAuthorOrReadOnly, permissions.
+                          IsAuthenticatedOrReadOnly)
 
     def get_review(self):
         review_id = self.kwargs.get('review_id')
@@ -64,11 +66,6 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(
             author=self.request.user,
             review=self.get_review())
-    
-    def perform_update(self, serializer):
-        if self.request.method == 'PUT':
-            raise MethodNotAllowed('Метод PUT запрещен')
-        super().perform_update(serializer)
 
 
 class CategoryViewSet(
@@ -137,4 +134,3 @@ class TitleViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=HTTPStatus.OK)
         return Response(serializer.errors, status=HTTPStatus.BAD_REQUEST)
-    
