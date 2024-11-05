@@ -1,5 +1,5 @@
 from django_filters.rest_framework import (
-    FilterSet, CharFilter, NumberFilter
+    CharFilter, FilterSet, NumberFilter
 )
 
 from reviews.models import Category, Genre, Title

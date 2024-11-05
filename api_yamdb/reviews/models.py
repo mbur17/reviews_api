@@ -1,9 +1,11 @@
 from datetime import datetime
 
-from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
+from django.core.validators import (
+    RegexValidator, MinValueValidator, MaxValueValidator
+)
 from django.db import models
 from django.db.models import (
-    Model, CASCADE, ManyToManyField, ForeignKey,
+    Model, ManyToManyField, ForeignKey,
     CharField, SlugField, IntegerField, TextField, SET_NULL,
 )
 from django.contrib.auth import get_user_model

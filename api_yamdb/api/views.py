@@ -1,17 +1,16 @@
+from http import HTTPStatus
+
 from django.contrib.auth import get_user_model
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.exceptions import ParseError, MethodNotAllowed
 from rest_framework import viewsets, mixins, permissions
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ParseError, ValidationError
 from rest_framework.response import Response
-
-from http import HTTPStatus
 
 from reviews.models import Review, Title, Category, Genre
 from users.permissions import (
-    IsModeratorOrAuthorOrReadOnly, IsAdminOrReadOnly
+    IsModeratorOrAdminOrAuthorOrReadOnly, IsAdminOrReadOnly
 )
 from .mixins import UpdateMixin
 from .serializers import (
@@ -27,7 +26,7 @@ class ReviewViewSet(UpdateMixin, viewsets.ModelViewSet):
     """Вьюсет для эндпоинта reviews/."""
 
     serializer_class = ReviewSerializer
-    permission_classes = (IsModeratorOrAuthorOrReadOnly,
+    permission_classes = (IsModeratorOrAdminOrAuthorOrReadOnly,
                           permissions.IsAuthenticatedOrReadOnly)
 
     def get_title(self):
@@ -36,7 +35,7 @@ class ReviewViewSet(UpdateMixin, viewsets.ModelViewSet):
         return title
 
     def get_queryset(self):
-        return self.get_title().reviews.all()
+        return self.get_title().reviews.all().order_by('pub_date')
 
     def perform_create(self, serializer):
         author = self.request.user
@@ -52,7 +51,7 @@ class CommentViewSet(UpdateMixin, viewsets.ModelViewSet):
     """Вьюсет для эндпоинта comments/."""
 
     serializer_class = CommentSerializer
-    permission_classes = (IsModeratorOrAuthorOrReadOnly, permissions.
+    permission_classes = (IsModeratorOrAdminOrAuthorOrReadOnly, permissions.
                           IsAuthenticatedOrReadOnly)
 
     def get_review(self):
@@ -61,7 +60,7 @@ class CommentViewSet(UpdateMixin, viewsets.ModelViewSet):
         return review
 
     def get_queryset(self):
-        return self.get_review().comments.all()
+        return self.get_review().comments.all().order_by('pub_date')
 
     def perform_create(self, serializer):
         serializer.save(
@@ -132,7 +131,9 @@ class TitleViewSet(viewsets.ModelViewSet):
     - PATCH: Частичное обновление информации о произведении(Администратор)
     - DELETE: Удаление произведения(Администратор).
     """
-    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')
+    ).order_by('-year', 'name')
     permission_classes = (IsAdminOrReadOnly, )
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitleFilter
