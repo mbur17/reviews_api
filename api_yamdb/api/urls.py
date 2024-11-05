@@ -10,11 +10,11 @@ from .views import (
 router = DefaultRouter()
 
 router.register(
-    r'titles/(?P<titles_id>\d+)/reviews',
+    r'titles/(?P<title_id>\d+)/reviews',
     ReviewViewSet,
     basename='reviews')
 router.register(
-    r'titles/(?P<titles_id>\d+)/reviews/(?P<review_id>\d+)/comments',
+    r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
     CommentViewSet,
     basename='comments')
 router.register('categories', CategoryViewSet, basename='categories')
@@ -23,5 +23,5 @@ router.register('titles', TitleViewSet, basename='titles')
 
 
 urlpatterns = [
-    path('v1/', include(router.urls)),
+    path('', include(router.urls)),
 ]

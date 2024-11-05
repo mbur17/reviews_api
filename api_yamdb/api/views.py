@@ -1,15 +1,27 @@
+from http import HTTPStatus
+
 from django.contrib.auth import get_user_model
-from reviews.models import Review, Title, Category, Genre, Title
+from reviews.models import Review, Title, Category, Genre
 from .serializers import (
     CommentSerializer, ReviewSerializer,
     CategorySerializer, GenreSerializer, TitleSerializer, TitleGETSerializer
 )
+from rest_framework.exceptions import ParseError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, mixins
+from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
+from reviews.models import Review, Title, Category, Genreг, Title
 from users.permissions import (
     IsModeratorOrAuthorOrReadOnly, IsAdminOrReadOnly
 )
+from .serializers import (
+    CommentSerializer, ReviewSerializer,
+    CategorySerializer, GenreSerializer, TitleSerializer, TitleGETSerializer
+)
+from .filters import TitleFilter, CategoryFilter, GenreFilter
 
 User = get_user_model()
 
@@ -27,9 +39,13 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
+        author = self.request.user
+        title = self.get_title()
+        if Review.objects.filter(author=author, title=title):
+            raise ParseError('Разрешается только 1 отзыв на произведение')
         serializer.save(
-            author=self.request.user,
-            title=self.get_title())
+            author=author,
+            title=title)
         self.rating()
 
     def perform_update(self, serializer):
@@ -43,8 +59,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def rating(self):
         """Функция высчитывает и записывает среднюю оценку произведения"""
         title = self.get_title()
-        average_rating = Review.objects.filter(
-            title=title).aggregate(avg=Avg('score'))['avg']
+        average_rating = title.reviews.all().aggregate(avg=Avg('score'))['avg']
         if average_rating is not None:
             average_rating = round(average_rating)
         title.rating = average_rating
@@ -76,6 +91,16 @@ class CategoryViewSet(
     """Вьюсет для эндпоинта categories/."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = CategoryFilter
+    lookup_url_kwarg = 'slug'
+
+    def destroy(self, request, *args, **kwargs):
+        slug = kwargs.get('slug')
+        obj = get_object_or_404(Category, slug=slug)
+        obj.delete()
+        return Response(status=HTTPStatus.NO_CONTENT)
 
 
 class GenreViewSet(
@@ -85,16 +110,46 @@ class GenreViewSet(
     """Вьюсет для эндпоинта genres/."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = GenreFilter
+    lookup_url_kwarg = 'slug'
+
+    def destroy(self, request, *args, **kwargs):
+        slug = kwargs.get('slug')
+        obj = get_object_or_404(Genre, slug=slug)
+        obj.delete()
+        return Response(status=HTTPStatus.NO_CONTENT)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для эндпоинта titles/."""
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
-    serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly, )
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = TitleFilter
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return TitleGETSerializer
         return TitleSerializer
+
+    def update(self, request, *args, **kwargs):
+        return Response(status=HTTPStatus.METHOD_NOT_ALLOWED)
+
+    def partial_update(self, request, *args, **kwargs):
+        name_length = len(request.data.get('name'))
+        if name_length > 256:
+            raise ValidationError(
+                'Название произведения не может быть длиннее 256 символов.'
+            )
+
+        title = get_object_or_404(Title, pk=kwargs.get('pk'))
+        serializer = TitleSerializer(title, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=HTTPStatus.OK)
+        return Response(serializer.errors, status=HTTPStatus.BAD_REQUEST)
+
+
 

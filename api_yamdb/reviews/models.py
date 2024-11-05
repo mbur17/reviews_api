@@ -50,7 +50,10 @@ class Genre(Model):
 
 
 class Title(Model):
-    name = CharField(max_length=256, verbose_name='Название', db_index=True)
+    name = CharField(
+        max_length=256, verbose_name='Название', db_index=True,
+
+    )
     year = IntegerField(
         verbose_name='Год',
         validators=[

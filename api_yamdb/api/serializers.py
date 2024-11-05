@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from rest_framework.exceptions import ParseError
 from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.exceptions import ParseError
 from rest_framework.serializers import (
-    ModelSerializer, SlugRelatedField, IntegerField
+    ModelSerializer, SlugRelatedField, IntegerField,
 )
 
 from reviews.models import Comment, Review, Genre, Category, Title
@@ -17,11 +17,6 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'text', 'author', 'title', 'score', 'pub_date')
         model = Review
-        validators = [UniqueTogetherValidator(
-            queryset=Review.objects.all(),
-            fields=['author, title'],
-            message='Разрешается остаиоть только 1 отзыв'
-        ),]
 
     def validate_score(self, value):
         if value < 1 or value > 10:
@@ -53,11 +48,11 @@ class CategorySerializer(ModelSerializer):
         fields = ('name', 'slug', )
 
 
-class TitleGETSerializer:
-    """Сериализатор для GET запросов."""
-    genre = GenreSerializer(read_only=True, many=True)
+class TitleGETSerializer(serializers.ModelSerializer):
+    """Сериализатор объектов класса Title при GET запросах."""
+    genre = GenreSerializer(many=True, read_only=True)
     category = CategorySerializer(read_only=True)
-    rating = IntegerField(read_only=True)
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
@@ -81,19 +76,18 @@ class TitleSerializer(ModelSerializer):
     )
     category = SlugRelatedField(
         queryset=Category.objects.all(),
-        slug_field='slug'
+        slug_field='slug',
     )
+    rating = IntegerField(read_only=True)
 
     class Meta:
         model = Title
         fields = (
+            'id',
             'name',
             'year',
+            'rating',
             'description',
             'genre',
             'category',
         )
-
-    def to_representation(self, instance):
-        serializer = TitleGETSerializer(instance)
-        return serializer.data
