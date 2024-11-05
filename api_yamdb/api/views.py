@@ -1,11 +1,6 @@
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
-from reviews.models import Review, Title, Category, Genre
-from .serializers import (
-    CommentSerializer, ReviewSerializer,
-    CategorySerializer, GenreSerializer, TitleSerializer, TitleGETSerializer
-)
 from rest_framework.exceptions import ParseError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
@@ -13,7 +8,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, mixins
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
-from reviews.models import Review, Title, Category, Genreг, Title
+from reviews.models import Review, Title, Category, Genre, Title
 from users.permissions import (
     IsModeratorOrAuthorOrReadOnly, IsAdminOrReadOnly
 )
