@@ -12,6 +12,7 @@ User = get_user_model()
 
 
 class Category(Model):
+    """Класс Категории."""
     name = CharField(max_length=256, verbose_name='Название', db_index=True)
     slug = SlugField(
         max_length=50, verbose_name='slug', unique=True,
@@ -30,7 +31,7 @@ class Category(Model):
 
 
 class Genre(Model):
-    """Класс жанров."""
+    """Класс жанра."""
 
     name = CharField(max_length=256, verbose_name='Hазвание', db_index=True)
     slug = SlugField(
@@ -50,6 +51,7 @@ class Genre(Model):
 
 
 class Title(Model):
+    """Класс произведения."""
     name = CharField(
         max_length=256, verbose_name='Название', db_index=True,
 
@@ -90,6 +92,7 @@ class GenreTitle(Model):
 
 
 class Review(models.Model):
+    """Класс отзыва."""
     text = models.TextField(blank=False)
     author = models.ForeignKey(User,
                                on_delete=models.CASCADE,
@@ -114,6 +117,7 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
+    """Класс комментария."""
     text = models.TextField(blank=False)
     author = models.ForeignKey(User,
                                on_delete=models.CASCADE,
