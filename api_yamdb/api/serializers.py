@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework.exceptions import ParseError
+from rest_framework.exceptions import ParseError, ValidationError
 from rest_framework.serializers import (
     ModelSerializer, SlugRelatedField, IntegerField,
 )
@@ -93,3 +93,11 @@ class TitleSerializer(ModelSerializer):
             'genre',
             'category',
         )
+
+    def validate_name(self, value):
+        """Валидация длины названия."""
+        if len(value) > 256:
+            raise ValidationError(
+                'Длина названия не должна превышать 256 символов.'
+            )
+        return value
