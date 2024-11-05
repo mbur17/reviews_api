@@ -12,10 +12,11 @@ User = get_user_model()
 FILES_CLASSES = {
     'category': Category,
     'genre': Genre,
-    'title': Title,
-    'genretitle': GenreTitle,
+    'titles': Title,
+    'genre_title': GenreTitle,
     'review': Review,
-    'comment': Comment,
+    'comments': Comment,
+    'users': User
 }
 FIELDS = {
     'category': {
@@ -40,6 +41,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         for key, value in FILES_CLASSES.items():
             print(f'загрузка таблицы {value.__qualname__}')
+            path = os.path.join(CSV_FILES_DIR, f'{file_name}.csv')
+            try:
+                with open(path, encoding='utf-8') as file:
+                    return list(csv.reader(file))
+            except Exception as ex:
+                print(ex)
 
 
 def open_csv(file_name):
