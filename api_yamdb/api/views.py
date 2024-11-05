@@ -1,11 +1,11 @@
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
-from rest_framework.exceptions import ParseError
+from rest_framework.exceptions import ParseError, MethodNotAllowed
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, permissions
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from reviews.models import Review, Title, Category, Genre
@@ -23,7 +23,7 @@ User = get_user_model()
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (IsModeratorOrAuthorOrReadOnly,)
+    permission_classes = (IsModeratorOrAuthorOrReadOnly, permissions.IsAuthenticatedOrReadOnly)
 
     def get_title(self):
         title_id = self.kwargs.get('title_id')
@@ -41,11 +41,16 @@ class ReviewViewSet(viewsets.ModelViewSet):
         serializer.save(
             author=author,
             title=title)
+    
+    def perform_update(self, serializer):
+        if self.request.method == 'PUT':
+            raise MethodNotAllowed('Метод PUT запрещен')
+        super().perform_update(serializer)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsModeratorOrAuthorOrReadOnly,)
+    permission_classes = (IsModeratorOrAuthorOrReadOnly, permissions.IsAuthenticatedOrReadOnly)
 
     def get_review(self):
         review_id = self.kwargs.get('review_id')
@@ -59,6 +64,11 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(
             author=self.request.user,
             review=self.get_review())
+    
+    def perform_update(self, serializer):
+        if self.request.method == 'PUT':
+            raise MethodNotAllowed('Метод PUT запрещен')
+        super().perform_update(serializer)
 
 
 class CategoryViewSet(
@@ -127,3 +137,4 @@ class TitleViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=HTTPStatus.OK)
         return Response(serializer.errors, status=HTTPStatus.BAD_REQUEST)
+    
