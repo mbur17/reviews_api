@@ -11,13 +11,17 @@ from django.db.models import (
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+NAME_MAX_LENGTH = 256
+SLUG_MAX_LENGTH = 50
 
 
 class Category(Model):
     """Класс Категории."""
-    name = CharField(max_length=256, verbose_name='Название', db_index=True)
+    name = CharField(
+        max_length=NAME_MAX_LENGTH, verbose_name='Название', db_index=True
+    )
     slug = SlugField(
-        max_length=50, verbose_name='slug', unique=True,
+        max_length=SLUG_MAX_LENGTH, verbose_name='slug', unique=True,
         validators=[
             RegexValidator(
                 regex='^[-a-zA-Z0-9_]+$',
@@ -31,13 +35,18 @@ class Category(Model):
         verbose_name_plural = 'Категории'
         ordering = ('name',)
 
+    def __str__(self):
+        return self.name[:30]
+
 
 class Genre(Model):
     """Класс жанра."""
 
-    name = CharField(max_length=256, verbose_name='Hазвание', db_index=True)
+    name = CharField(
+        max_length=NAME_MAX_LENGTH, verbose_name='Hазвание', db_index=True
+    )
     slug = SlugField(
-        max_length=50, verbose_name='slug', unique=True,
+        max_length=SLUG_MAX_LENGTH, verbose_name='slug', unique=True,
         validators=[
             RegexValidator(
                 regex=r'^[-a-zA-Z0-9_]+$',
@@ -51,11 +60,14 @@ class Genre(Model):
         verbose_name_plural = 'Жанры'
         ordering = ('name',)
 
+    def __str__(self):
+        return self.name[:30]
+
 
 class Title(Model):
     """Класс произведения."""
     name = CharField(
-        max_length=256, verbose_name='Название', db_index=True,
+        max_length=NAME_MAX_LENGTH, verbose_name='Название', db_index=True,
 
     )
     year = IntegerField(
@@ -83,6 +95,9 @@ class Title(Model):
         verbose_name = 'произведение'
         verbose_name_plural = 'Произведения'
         ordering = ('-year', 'name')
+
+    def __str__(self):
+        return self.name[:30]
 
 
 class GenreTitle(Model):
