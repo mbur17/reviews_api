@@ -16,34 +16,30 @@ User = get_user_model()
 class SignupView(APIView):
     def post(self, request):
         serializer = SignupSerializer(data=request.data)
-        if serializer.is_valid():
-            # Проверяем, был ли пользователь уже зарегистрирован.
-            if 'user' in serializer.validated_data:
-                return Response(
-                    {'detail': serializer.validated_data['detail']},
-                    status=status.HTTP_200_OK
-                )
-            # Создание нового пользователя, если это первый запрос.
-            user = serializer.save()
+        serializer.is_valid(raise_exception=True)
+        if 'user' in serializer.validated_data:
             return Response(
-                {'username': user.username, 'email': user.email},
+                {'detail': serializer.validated_data['detail']},
                 status=status.HTTP_200_OK
             )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = serializer.save()
+        return Response(
+            {'username': user.username, 'email': user.email},
+            status=status.HTTP_200_OK
+        )
 
 
 class TokenView(APIView):
     def post(self, request):
         serializer = TokenSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.validated_data['user']
-            token = AccessToken.for_user(user)
-            return Response({'token': str(token)}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token = AccessToken.for_user(user)
+        return Response({'token': str(token)}, status=status.HTTP_200_OK)
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all().order_by('id')
+    queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin,)
     lookup_field = 'username'
@@ -51,7 +47,6 @@ class UserViewSet(viewsets.ModelViewSet):
     search_fields = ('username',)
 
     def update(self, request, *args, **kwargs):
-        # Явно запрещаем PUT-запросы.
         if request.method == 'PUT':
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
         return super().update(request, *args, **kwargs)
@@ -68,7 +63,6 @@ class UserMeView(APIView):
         serializer = MeSerializer(
             request.user, data=request.data, partial=True
         )
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)

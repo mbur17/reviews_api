@@ -11,13 +11,19 @@ from django.db.models import (
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+NAME_MAX_LENGTH = 256
+SLUG_MAX_LENGTH = 50
+MAX_VALUE = 10
+MIN_VALUE = 1
 
 
 class Category(Model):
     """Класс Категории."""
-    name = CharField(max_length=256, verbose_name='Название', db_index=True)
+    name = CharField(
+        max_length=NAME_MAX_LENGTH, verbose_name='Название', db_index=True
+    )
     slug = SlugField(
-        max_length=50, verbose_name='slug', unique=True,
+        max_length=SLUG_MAX_LENGTH, verbose_name='slug', unique=True,
         validators=[
             RegexValidator(
                 regex='^[-a-zA-Z0-9_]+$',
@@ -31,13 +37,18 @@ class Category(Model):
         verbose_name_plural = 'Категории'
         ordering = ('name',)
 
+    def __str__(self):
+        return self.name[:30]
+
 
 class Genre(Model):
     """Класс жанра."""
 
-    name = CharField(max_length=256, verbose_name='Hазвание', db_index=True)
+    name = CharField(
+        max_length=NAME_MAX_LENGTH, verbose_name='Hазвание', db_index=True
+    )
     slug = SlugField(
-        max_length=50, verbose_name='slug', unique=True,
+        max_length=SLUG_MAX_LENGTH, verbose_name='slug', unique=True,
         validators=[
             RegexValidator(
                 regex=r'^[-a-zA-Z0-9_]+$',
@@ -51,11 +62,14 @@ class Genre(Model):
         verbose_name_plural = 'Жанры'
         ordering = ('name',)
 
+    def __str__(self):
+        return self.name[:30]
+
 
 class Title(Model):
     """Класс произведения."""
     name = CharField(
-        max_length=256, verbose_name='Название', db_index=True,
+        max_length=NAME_MAX_LENGTH, verbose_name='Название', db_index=True,
 
     )
     year = IntegerField(
@@ -84,6 +98,9 @@ class Title(Model):
         verbose_name_plural = 'Произведения'
         ordering = ('-year', 'name')
 
+    def __str__(self):
+        return self.name[:30]
+
 
 class GenreTitle(Model):
     """Вспомогательный класс, связывающий Genre и Title."""
@@ -91,6 +108,14 @@ class GenreTitle(Model):
     title = ForeignKey(
         Title, on_delete=models.CASCADE, verbose_name='произведение'
     )
+
+    class Meta:
+        verbose_name = 'жанр-произведение'
+        verbose_name_plural = 'Жанры-произведения'
+        ordering = ('title',)
+
+    def __str__(self):
+        return f'{self.title}-{self.genre}'
 
 
 class Review(models.Model):
@@ -102,12 +127,18 @@ class Review(models.Model):
     title = models.ForeignKey(Title,
                               on_delete=models.CASCADE,
                               related_name='reviews')
-    score = models.IntegerField(blank=True, null=True)
+    score = models.PositiveSmallIntegerField(blank=True,
+                                             null=True,
+                                             validators=[
+                                                 MaxValueValidator(MAX_VALUE),
+                                                 MinValueValidator(MIN_VALUE)])
     pub_date = models.DateTimeField('Дата добавления',
                                     auto_now_add=True,
                                     db_index=True)
 
     class Meta:
+
+        ordering = ('pub_date',)
 
         constraints = [
             models.UniqueConstraint(fields=['author', 'title'],
@@ -130,6 +161,10 @@ class Comment(models.Model):
     pub_date = models.DateTimeField('Дата добавления',
                                     auto_now_add=True,
                                     db_index=True)
+
+    class Meta:
+
+        ordering = ('pub_date',)
 
     def __str__(self):
         return self.text
