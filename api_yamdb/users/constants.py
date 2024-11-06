@@ -1,5 +1,5 @@
-# Константы для определения длины поля CharField.
-MAX_LENGTH_6 = 6
-MAX_LENGTH_9 = 9
-MAX_LENGTH_150 = 150
-MAX_LENGTH_254 = 254
+# Константы для определения длины полей CharField и RegexField.
+CODE_MAX_LENGTH = 6
+ROLE_MAX_LENGTH = 9
+NAME_MAX_LENGTH = 150
+EMAIL_MAX_LENGTH = 254

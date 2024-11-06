@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from .constants import MAX_LENGTH_6, MAX_LENGTH_9
+from .constants import CODE_MAX_LENGTH, ROLE_MAX_LENGTH
 
 
 class User(AbstractUser):
@@ -19,11 +19,11 @@ class User(AbstractUser):
     email = models.EmailField(unique=True, blank=False, null=False)
     bio = models.TextField(blank=True)
     role = models.CharField(
-        max_length=MAX_LENGTH_9, choices=ROLE_CHOICES, default=USER
+        max_length=ROLE_MAX_LENGTH, choices=ROLE_CHOICES, default=USER
     )
     # Поле для хранения кода подтверждения.
     confirmation_code = models.CharField(
-        max_length=MAX_LENGTH_6, blank=True, null=True
+        max_length=CODE_MAX_LENGTH, blank=True, null=True
     )
 
     class Meta:

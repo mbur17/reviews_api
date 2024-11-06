@@ -39,7 +39,7 @@ class TokenView(APIView):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all().order_by('id')
+    queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin,)
     lookup_field = 'username'
